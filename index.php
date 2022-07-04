@@ -32,9 +32,7 @@
         </div>
     </div>
     <div>
-        <img id="camToggle"
-            class="mx-auto p-5 bg-white bg-opacity-20 w-24 h-auto rounded-full filter-blue opacity-90 cursor-pointer"
-            src="video-svgrepo-com.svg">
+        <img id="camToggle" class="mx-auto p-5 bg-white bg-opacity-20 w-24 h-auto rounded-full filter-blue opacity-90 cursor-pointer" src="video-svgrepo-com.svg">
     </div>
     <div class="chat-bar-collapsible">
         <button id="chat-button" type="button" class="collapsible bg-yellow-400">Chat with Elon Musk!
@@ -55,7 +53,6 @@
 
                         <!-- User input box -->
                         <div class="chat-bar-input-block">
-
 
                             <div class="chat-bar-icons flex-wrap">
                                 <h3 id="txt-in" onclick="heartButton()">Hi there!</h3>
