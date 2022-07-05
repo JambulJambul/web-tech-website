@@ -25,8 +25,8 @@ $app->addRoutingMiddleware();
 $app->add(new BasePathMiddleware($app));
 $app->addErrorMiddleware(true, true, true);
 
-$app->get('/', function (Request $request, Response $response) {
-    $response->getBody()->write(file_get_contents('home.php'));
+$app->get('/index.php', function (Request $request, Response $response) {
+    $response->getBody()->write(file_get_contents('homepage.php'));
     return $response;
 });
 
@@ -40,7 +40,7 @@ $app->get('/contacts', function (Request $request, Response $response) {
     return $response;
 });
 
-$app->get('/api/contacts', function (Request $request, Response $response) {
+$app->get('/api/showConts', function (Request $request, Response $response) {
     $sql = "SELECT * FROM contacts";
 
     try {

@@ -49,17 +49,20 @@
 
                         <!-- Messages -->
                         <div>
-                        <a href="#"><h2>Add new contact <i class="fa fa-plus" aria-hidden="true"></i></h2></a>
-                        <div class="flex my-4">
-                        <div class="mx-auto flex">
-                            <div class="my-auto mr-2"><img src="assets/img/profile-user-svgrepo-com.svg" alt=""></div>
-                            <div class="ml-2">
-                                <h3>Hilman Nurfahmi</h3>
-                                <h3>081210711832</h3>
+                            <a href="#">
+                                <h2>Add new contact <i class="fa fa-plus" aria-hidden="true"></i></h2>
+                            </a>
+                            <div class="flex my-4">
+                                <div class="mx-auto flex">
+                                    <div class="my-auto mr-2"><img src="assets/img/profile-user-svgrepo-com.svg" alt=""></div>
+                                    <div class="ml-2">
+                                        <h3>Default User</h3>
+                                        <h3>00000000</h3>
+                                    </div>
+                                    <div class="my-auto ml-2"><a href=""><i class="fa fa-pencil" aria-hidden="true"></i></a></div>
+                                </div>
                             </div>
-                            <div class="my-auto ml-2"><a href=""><i class="fa fa-pencil" aria-hidden="true"></i></a></div>
-                        </div>
-                    </div>
+                            <div class="showCont"></div>
                         </div>
 
                     </div>
@@ -116,6 +119,40 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="assets/js/responses.js"></script>
     <script src="assets/js/chat.js"></script>
+
+    <script>
+        function getData() {
+            $('.showCont').html('');
+            $.ajax({
+                url: "api/showConts",
+                type: "GET",
+                contentType: "application/json;charset=utf-8",
+                dataType: "json",
+                success: function(result) {
+                    var html = '';
+                    console.log(result.data);
+                    $.each(result.data, function(key,item) {
+                        html+= '<div class="flex my-4">';
+                        html+= '<div class="mx-auto flex">';
+                        html+= '<div class="my-auto mr-2"><img src="assets/img/profile-user-svgrepo-com.svg" alt=""></div>';
+                        html+= '<div class="ml-2">';
+                        html+= '<h3>'+item.name+'</h3>';
+                        html+= '<h3>'+item.phonenum+'</h3>';
+                        html+= '</div>';
+                        html+= '<div class="my-auto ml-2"><a href=""><i class="fa fa-pencil" aria-hidden="true"></i></a></div></div></div>';
+
+                    });
+                    $('.showCont').html(html);
+                },error: function(errormessage) {
+                    alert(errormessage.responseText);
+                }
+            });
+        }
+        
+        $(document).ready(function() {
+            getData();
+        });
+    </script>
 </body>
 
 </html>

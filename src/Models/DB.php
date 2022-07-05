@@ -6,10 +6,10 @@ use \PDO;
 
 class DB
 {
-    private $host = '127.0.0.1';
+    private $host = 'localhost';
     private $user = 'root';
     private $pass = '';
-    private $dbname = 'vicon';
+    private $dbname = 'elon';
 
     public function connect()
     {
