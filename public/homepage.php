@@ -49,9 +49,28 @@
 
                         <!-- Messages -->
                         <div>
-                            <a href="#">
-                                <h2>Add new contact <i class="fa fa-plus" aria-hidden="true"></i></h2>
-                            </a>
+                            <h2>Add new contact</h2>
+                            <form method="post" class="form-data" id="form-data">
+                                <label>Name:</label>
+                                <input type="text" name="username" class="border" required="true"><br>
+                                <label>Phone Number:</label>
+                                <input type="text" name="phonenum" class="border" required="true"><br>
+                                <button type="button" name="createAcc" id="createAcc" class="p-2 my-2 bg-teal-500">
+                                    Create Account
+                                </button>
+                            </form>
+
+                            <h2>Edit Account</h2>
+                            <form method="post" class="editform" id="editform">
+                            <input type="hidden" name="cont_id" id="cont_id">
+                                <label>Name:</label>
+                                <input type="text" name="username" class="border" required="true"><br>
+                                <label>Phone Number:</label>
+                                <input type="text" name="phonenum" class="border" required="true"><br>
+                                <button type="button" name="editAcc" id="editAcc" class="p-2 my-2 bg-teal-500">
+                                    Update Account
+                                </button>
+                            </form>
                             <div class="flex my-4">
                                 <div class="mx-auto flex">
                                     <div class="my-auto mr-2"><img src="assets/img/profile-user-svgrepo-com.svg" alt=""></div>
@@ -131,24 +150,108 @@
                 success: function(result) {
                     var html = '';
                     console.log(result.data);
-                    $.each(result.data, function(key,item) {
-                        html+= '<div class="flex my-4">';
-                        html+= '<div class="mx-auto flex">';
-                        html+= '<div class="my-auto mr-2"><img src="assets/img/profile-user-svgrepo-com.svg" alt=""></div>';
-                        html+= '<div class="ml-2">';
-                        html+= '<h3>'+item.name+'</h3>';
-                        html+= '<h3>'+item.phonenum+'</h3>';
-                        html+= '</div>';
-                        html+= '<div class="my-auto ml-2"><a href=""><i class="fa fa-pencil" aria-hidden="true"></i></a></div></div></div>';
-
+                    $.each(result.data, function(key, item) {
+                        html += '<div class="flex my-4">';
+                        html += '<div class="mx-auto flex">';
+                        html += '<div class="my-auto mr-2"><img src="assets/img/profile-user-svgrepo-com.svg" alt=""></div>';
+                        html += '<div class="ml-2">';
+                        html += '<h3>' + item.username + '</h3>';
+                        html += '<h3>' + item.phonenum + '</h3>';
+                        html += '</div>';
+                        html += '<div class="my-auto ml-2"><a href="#" class="mr-2" data-id="' + item.cont_id + '" onclick="getCont(' + item.cont_id + ')"><i class="fa fa-pencil" aria-hidden="true"></i></a><a href="#" data-id="' + item.cont_id + '" onclick="deleteContact(' + item.cont_id + ')"><i class="fa fa-trash" aria-hidden="true"></i></a></div></div></div>';
                     });
                     $('.showCont').html(html);
-                },error: function(errormessage) {
+                },
+                error: function(errormessage) {
                     alert(errormessage.responseText);
                 }
             });
         }
-        
+
+        $("#createAcc").click(function() {
+            $.ajax({
+                type: 'POST',
+                url: "api/addConts",
+                enctype: 'multipart/form-data',
+                processData: false,
+                contentType: false,
+                data: new FormData(document.querySelector('.form-data')),
+                success: function(result) {
+                    getData()
+                    $('#alert').show();
+                    $('#alert').text('Success: ' + result.message);
+                },
+                error: function(response) {
+                    getData()
+                    $('#alert').show();
+                    $('#alert').text('Error: ' + JSON.parse(response.responseText).message);
+                }
+            });
+        });
+
+        function deleteContact($cont_id) {
+            $.ajax({
+                url: "api/delcontacts/" + $cont_id,
+                type: "DELETE",
+                contentType: "application/json;charset=utf-8",
+                dataType: "json",
+                success: function(result) {
+                    getData()
+                    $('#alert').show();
+                    $('#alert').text('Success: ' + result.message);
+                },
+                error: function(errormessage) {
+                    alert(errormessage.responseText);
+                }
+            });
+        }
+
+        function getCont($cont_id) {
+            formRefresh();
+            $.ajax({
+                url: "api/getCont/" + $cont_id,
+                type: "GET",
+                contentType: "application/json;charset=utf-8",
+                dataType: "json",
+                success: function(result) {
+                    $('#cont_id').val(result.data.cont_id);
+                    $('#username').val(result.data.username);
+                    $('#phonenum').val(result.data.phonenum);
+                },
+                error: function(errormessage) {
+                    alert(errormessage.responseText);
+                }
+            });
+        }
+
+        function formRefresh() {
+            $('#editform')[0].reset();
+            getData();
+        }
+
+        $("#editAcc").click(function() {
+            var cont_id = $('#cont_id').val();
+            console.log("ID Button"+cont_id);
+            $.ajax({
+                type: 'POST',
+                url: "api/editConts/"+cont_id,
+                enctype: 'multipart/form-data',
+                processData: false,
+                contentType: false,
+                data: new FormData(document.querySelector('.editform')),
+                success: function(result) {
+                    getData();
+                    $('#alert').show();
+                    $('#alert').text('Success: ' + result.message);
+                },
+                error: function(response) {
+                    getData();
+                    $('#alert').show();
+                    $('#alert').text('Error: ' + JSON.parse(response.responseText).message);
+                }
+            });
+        });
+
         $(document).ready(function() {
             getData();
         });

@@ -6,9 +6,9 @@ use \PDO;
 
 class DB
 {
-    private $host = 'localhost';
+    private $host = '127.0.0.1';
     private $user = 'root';
-    private $pass = '';
+    private $pass = 'mynewpassword';
     private $dbname = 'elon';
 
     public function connect()

@@ -14,8 +14,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 $containerBuilder = new ContainerBuilder();
 $container = $containerBuilder->build();
 
-$container->set('upload_directory', __DIR__ . '/assets/img');
-
 AppFactory::setContainer($container);
 
 $app = AppFactory::create();
@@ -27,16 +25,6 @@ $app->addErrorMiddleware(true, true, true);
 
 $app->get('/index.php', function (Request $request, Response $response) {
     $response->getBody()->write(file_get_contents('homepage.php'));
-    return $response;
-});
-
-$app->get('/chat', function (Request $request, Response $response) {
-    $response->getBody()->write(file_get_contents('chat.php'));
-    return $response;
-});
-
-$app->get('/contacts', function (Request $request, Response $response) {
-    $response->getBody()->write(file_get_contents('contacts.php'));
     return $response;
 });
 
@@ -73,53 +61,31 @@ $app->get('/api/showConts', function (Request $request, Response $response) {
     }
 });
 
-$app->post('/api/contacts', function (Request $request, Response $response, array $args) {
+$app->post('/api/addConts', function (Request $request, Response $response, array $args) {
     $data = $request->getParsedBody();
-    $name = $data["name"];
-    $phone = $data["phone"];
-    $address = $data["address"];
-    $created_at = date('Y-m-d H:i:s');
+    $username = $data["username"];
+    $phonenum = $data["phonenum"];
 
-    $directory = $this->get('upload_directory');
-    $uploadedFiles = $request->getUploadedFiles();
-    $uploadedFile = $uploadedFiles['image'];
-
-    if ($uploadedFile == null || $uploadedFile == "") {
-        $data = array(
-            'error' => 'true',
-            'message' => 'Image is required'
-        );
-    } elseif ($name == null || $name == "") {
+    if ($username == null || $username == "") {
         $data = array(
             'error' => 'true',
             'message' => 'Name is required'
         );
-    } elseif ($phone == null || $phone == "") {
+    } elseif ($phonenum == null || $phonenum == "") {
         $data = array(
             'error' => 'true',
             'message' => 'Phone is required'
         );
-    } elseif ($address == null || $address == "") {
-        $data = array(
-            'error' => 'true',
-            'message' => 'Address is required'
-        );
     } else {
         try {
-
-            $image = moveUploadedFile($directory, $uploadedFile);
-
-            $sql = "INSERT INTO contacts (name, image, phone, address, created_at) VALUES (:name, :image, :phone, :address, :created_at)";
+            $sql = "INSERT INTO contacts (username, phonenum) VALUES (:username, :phonenum)";
 
             $db = new Db();
             $conn = $db->connect();
 
             $stmt = $conn->prepare($sql);
-            $stmt->bindParam(':name', $name);
-            $stmt->bindParam(':image', $image);
-            $stmt->bindParam(':phone', $phone);
-            $stmt->bindParam(':address', $address);
-            $stmt->bindParam(':created_at', $created_at);
+            $stmt->bindParam(':username', $username);
+            $stmt->bindParam(':phonenum', $phonenum);
             $stmt->execute();
 
             $result = array(
@@ -146,22 +112,22 @@ $app->post('/api/contacts', function (Request $request, Response $response, arra
         ->withStatus(500);
 });
 
-$app->get('/api/contacts/{id}', function (Request $request, Response $response) {
-    $id = $request->getAttribute('id');
+$app->get('/api/getCont/{cont_id}', function (Request $request, Response $response) {
+    $cont_id = $request->getAttribute('cont_id');
 
-    if ($id == null || $id == "") {
+    if ($cont_id == null || $cont_id == "") {
         $data = array(
             'error' => 'true',
             'message' => 'Id is required'
         );
     } else {
-        $sql = "SELECT * FROM contacts WHERE id=:id";
+        $sql = "SELECT * FROM contacts WHERE cont_id=:cont_id";
 
         try {
             $db = new Db();
             $conn = $db->connect();
             $stmt = $conn->prepare($sql);
-            $stmt->bindParam(':id', $id);
+            $stmt->bindParam(':cont_id', $cont_id);
             $stmt->execute();
             $contact = $stmt->fetch(PDO::FETCH_OBJ);
             $db = null;
@@ -198,58 +164,41 @@ $app->get('/api/contacts/{id}', function (Request $request, Response $response) 
 });
 
 $app->post(
-    '/api/contacts/{id}',
+    '/api/editConts/{cont_id}',
     function (Request $request, Response $response, array $args) {
-        $id = $request->getAttribute('id');
+        $cont_id = $request->getAttribute('cont_id');
         $data = $request->getParsedBody();
-        $name = $data["name"];
-        $phone = $data["phone"];
-        $address = $data["address"];
-
-        $directory = $this->get('upload_directory');
-        $uploadedFiles = $request->getUploadedFiles();
-        $uploadedFile = $uploadedFiles['image'];
-
-        if ($id == null || $id == "") {
+        $username = $data["username"];
+        $phonenum = $data["phonenum"];
+        if ($cont_id == null || $cont_id == "") {
             $data = array(
                 'error' => 'true',
                 'message' => 'Id is required'
             );
-        } elseif ($name == null || $name == "") {
+        } elseif ($username == null || $username == "") {
             $data = array(
                 'error' => 'true',
                 'message' => 'Name is required'
             );
-        } elseif ($phone == null || $phone == "") {
+        } elseif ($phonenum == null || $phonenum == "") {
             $data = array(
                 'error' => 'true',
                 'message' => 'Phone is required'
             );
-        } elseif ($address == null || $address == "") {
-            $data = array(
-                'error' => 'true',
-                'message' => 'Address is required'
-            );
         } else {
-            if ($uploadedFile->getSize() == 0) {
-                $sql = "UPDATE contacts SET name = :name, address = :address, phone = :phone WHERE id = $id";
-            } else {
-                $sql = "UPDATE contacts SET name = :name, address = :address, phone = :phone, image = :image WHERE id = $id";
-            }
+            
+                $sql = "UPDATE contacts SET username = :username, phonenum = :phonenum WHERE cont_id = $cont_id";
+            
 
             try {
                 $db = new Db();
                 $conn = $db->connect();
 
                 $stmt = $conn->prepare($sql);
-                $stmt->bindParam(':name', $name);
-                $stmt->bindParam(':address', $address);
-                $stmt->bindParam(':phone', $phone);
+                $stmt->bindParam(':username', $username);
+                $stmt->bindParam(':phonenum', $phonenum);
 
-                if ($uploadedFile->getSize() > 0) {
-                    $image = moveUploadedFile($directory, $uploadedFile);
-                    $stmt->bindParam(':image', $image);
-                }
+
 
                 $stmt->execute();
 
@@ -279,23 +228,23 @@ $app->post(
 );
 
 $app->delete(
-    '/api/contacts/{id}',
+    '/api/delcontacts/{cont_id}',
     function (Request $request, Response $response) {
-        $id = $request->getAttribute('id');
+        $cont_id = $request->getAttribute('cont_id');
 
-        if ($id == null || $id == "") {
+        if ($cont_id == null || $cont_id == "") {
             $data = array(
                 'error' => 'true',
                 'message' => 'Id is required'
             );
         } else {
-            $sql = "DELETE FROM contacts WHERE id=:id";
+            $sql = "DELETE FROM contacts WHERE cont_id=:cont_id";
 
             try {
                 $db = new Db();
                 $conn = $db->connect();
                 $stmt = $conn->prepare($sql);
-                $stmt->bindParam(':id', $id);
+                $stmt->bindParam(':cont_id', $cont_id);
                 $stmt->execute();
                 $db = null;
 
@@ -323,17 +272,5 @@ $app->delete(
             ->withStatus(500);
     }
 );
-
-function moveUploadedFile($directory,  UploadedFile $uploadedFile)
-{
-    $extension = pathinfo($uploadedFile->getClientFilename(), PATHINFO_EXTENSION);
-    // see http://php.net/manual/en/function.random-bytes.php
-    $basename = bin2hex(random_bytes(8));
-    $filename = sprintf('%s.%0.8s', $basename, $extension);
-
-    $uploadedFile->moveTo($directory . DIRECTORY_SEPARATOR . $filename);
-
-    return $filename;
-}
 
 $app->run();
